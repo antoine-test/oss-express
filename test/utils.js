@@ -140,3 +140,32 @@ describe('utils.compileQueryParser()', function () {
     assert.throws(() => utils.compileQueryParser('foo'), TypeError);
   });
 });
+
+describe('utils.compileTrust()', function () {
+  it('should trust every address for true', function () {
+    assert.strictEqual(utils.compileTrust(true)('10.0.0.1', 0), true);
+  });
+
+  it('should trust the given number of hops', function () {
+    var trust = utils.compileTrust(2);
+    assert.strictEqual(trust('10.0.0.1', 0), true);
+    assert.strictEqual(trust('10.0.0.1', 1), true);
+    assert.strictEqual(trust('10.0.0.1', 2), false);
+  });
+
+  it('should support comma-separated addresses', function () {
+    var trust = utils.compileTrust('10.0.0.1, 10.0.0.2');
+    assert.strictEqual(trust('10.0.0.2', 0), true);
+    assert.strictEqual(trust('10.0.0.3', 0), false);
+  });
+
+  it('should support named subnets', function () {
+    var trust = utils.compileTrust('loopback');
+    assert.strictEqual(trust('127.0.0.1', 0), true);
+    assert.strictEqual(trust('8.8.8.8', 0), false);
+  });
+
+  it('should trust nothing without a value', function () {
+    assert.strictEqual(utils.compileTrust(undefined)('127.0.0.1', 0), false);
+  });
+});
