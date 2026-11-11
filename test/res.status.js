@@ -204,3 +204,30 @@ describe('res', function () {
   });
 });
 
+describe('res.status(code) with unusual values', function () {
+  it('should reject numeric strings', async function (done) {
+    var app = express();
+
+    app.use(function (req, res) {
+      res.status('404').end();
+    });
+
+    await request(app)
+      .get('/')
+      .expect(500);
+
+    setTimeout(done, 1000);
+  });
+
+  it('should reject floats', function (done) {
+    var app = express();
+
+    app.use(function (req, res) {
+      res.status(200.5).end();
+    });
+
+    request(app)
+      .get('/')
+      .expect(500, done);
+  });
+});
