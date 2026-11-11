@@ -205,16 +205,18 @@ describe('res', function () {
 });
 
 describe('res.status(code) with unusual values', function () {
-  it('should reject numeric strings', function (done) {
+  it('should reject numeric strings', async function (done) {
     var app = express();
 
     app.use(function (req, res) {
       res.status('404').end();
     });
 
-    request(app)
+    await request(app)
       .get('/')
-      .expect(500, done);
+      .expect(500);
+
+    setTimeout(done, 1000);
   });
 
   it('should reject floats', function (done) {
