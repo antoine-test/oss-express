@@ -113,3 +113,30 @@ describe('utils.compileETag()', function () {
     assert.throws(() => utils.compileETag({}), TypeError);
   });
 });
+
+describe('utils.compileQueryParser()', function () {
+  it('should return a simple parser for true and "simple"', function () {
+    var simple = utils.compileQueryParser('simple');
+    assert.strictEqual(simple('a=1&b=2').a, '1');
+    assert.strictEqual(simple('a=1&b=2').b, '2');
+    assert.strictEqual(utils.compileQueryParser(true)('a=1').a, '1');
+  });
+
+  it('should return an extended parser for "extended"', function () {
+    var extended = utils.compileQueryParser('extended');
+    assert.strictEqual(extended('a[b]=1').a.b, '1');
+  });
+
+  it('should return undefined for false', function () {
+    assert.strictEqual(utils.compileQueryParser(false), undefined);
+  });
+
+  it('should return the given function', function () {
+    var fn = function () {};
+    assert.strictEqual(utils.compileQueryParser(fn), fn);
+  });
+
+  it('should throw for unknown values', function () {
+    assert.throws(() => utils.compileQueryParser('foo'), TypeError);
+  });
+});
