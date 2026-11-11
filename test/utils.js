@@ -113,3 +113,59 @@ describe('utils.compileETag()', function () {
     assert.throws(() => utils.compileETag({}), TypeError);
   });
 });
+
+describe('utils.compileQueryParser()', function () {
+  it('should return a simple parser for true and "simple"', function () {
+    var simple = utils.compileQueryParser('simple');
+    assert.strictEqual(simple('a=1&b=2').a, '1');
+    assert.strictEqual(simple('a=1&b=2').b, '2');
+    assert.strictEqual(utils.compileQueryParser(true)('a=1').a, '1');
+  });
+
+  it('should return an extended parser for "extended"', function () {
+    var extended = utils.compileQueryParser('extended');
+    assert.strictEqual(extended('a[b]=1').a.b, '1');
+  });
+
+  it('should return undefined for false', function () {
+    assert.strictEqual(utils.compileQueryParser(false), undefined);
+  });
+
+  it('should return the given function', function () {
+    var fn = function () {};
+    assert.strictEqual(utils.compileQueryParser(fn), fn);
+  });
+
+  it('should throw for unknown values', function () {
+    assert.throws(() => utils.compileQueryParser('foo'), TypeError);
+  });
+});
+
+describe('utils.compileTrust()', function () {
+  it('should trust every address for true', function () {
+    assert.strictEqual(utils.compileTrust(true)('10.0.0.1', 0), true);
+  });
+
+  it('should trust the given number of hops', function () {
+    var trust = utils.compileTrust(2);
+    assert.strictEqual(trust('10.0.0.1', 0), true);
+    assert.strictEqual(trust('10.0.0.1', 1), true);
+    assert.strictEqual(trust('10.0.0.1', 2), false);
+  });
+
+  it('should support comma-separated addresses', function () {
+    var trust = utils.compileTrust('10.0.0.1, 10.0.0.2');
+    assert.strictEqual(trust('10.0.0.2', 0), true);
+    assert.strictEqual(trust('10.0.0.3', 0), false);
+  });
+
+  it('should support named subnets', function () {
+    var trust = utils.compileTrust('loopback');
+    assert.strictEqual(trust('127.0.0.1', 0), true);
+    assert.strictEqual(trust('8.8.8.8', 0), false);
+  });
+
+  it('should trust nothing without a value', function () {
+    assert.strictEqual(utils.compileTrust(undefined)('127.0.0.1', 0), false);
+  });
+});
